@@ -1,5 +1,5 @@
 ---
-title: "Tables and Reports for Framework 7"
+title: "Tables and Reports for River Herring"
 author: Min-Yang Lee
 date: "`r format(Sys.time(), '%B %d, %Y')`" 
 output:
@@ -5324,11 +5324,7 @@ cat("<br> ")
 
 
 
-
-
-
-
-```{r select_gear_custom_table, eval = select_gear_custom}  
+```{r select_gear_custom_table, include=FALSE, eval = select_gear_custom}  
 ###############################
 #### Set Select Gear Types ####
 ###############################
@@ -5515,23 +5511,6 @@ write.csv(final_table, file=file.path(root.table.path,paste0("table_update",toda
   
 
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
