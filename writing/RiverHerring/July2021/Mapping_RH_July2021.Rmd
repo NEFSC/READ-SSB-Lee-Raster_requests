@@ -1,5 +1,5 @@
 ---
-title: "Maps for Framework 7"
+title: "Maps for River Herring"
 author: Min-Yang Lee
 date: "`r format(Sys.time(), '%B %d, %Y')`" 
 output:
@@ -1622,7 +1622,7 @@ MARGIN = c("MY_MARGIN") #Like "SPPNM","NESPP3","GEARCAT","FMP","STATE1". Comment
 #Give the files and folders a pretty name.
 readable_name ="MWT"
 
-logical_subset<-quote(which(FINALstack$GEARCODE %in% c("TRAWL-MIDWATER") &FINALstack$REGIME %in%c("1","2","3") & FINALstack[[FIELD]]>=1)) 
+logical_subset<-quote(which(FINALstack$GEARCODE %in% c("OTM","PTM") &FINALstack$REGIME %in%c("1","2","3") & FINALstack[[FIELD]]>=1)) 
 my_margin_name<-quote(paste(FINALstack$MONTH,readable_name, "REGIME",FINALstack$REGIME, sep="_"))
 
 
@@ -1639,9 +1639,11 @@ dir.create(export.geotiff.path, recursive=T, showWarnings=FALSE)
 # This construction first rows that match the logical. So, we only get rows where herring was retained.
 
 FIN$REGIME = dplyr::case_when(
-          (YEAR >= 2008) & (YEAR <= 2011) ~ 1,
-          (YEAR >= 2012) & (YEAR <= 2015) ~ 2,
-         (YEAR >= 2016) & (YEAR <= 2019) ~ 3)
+          (FIN$Year >= 2008) & (FIN$Year <= 2011) ~ 1,
+          (FIN$Year >= 2012) & (FIN$Year <= 2015) ~ 2,
+         (FIN$Year >= 2016) & (FIN$Year <= 2019) ~ 3)
+#HERE HERE HERE
+
 
 FINALstack=FIN
 FINALstack<-FINALstack[eval(logical_subset),]
@@ -1650,7 +1652,7 @@ FINALstack = FINALstack[which(FINALstack[[FIELD]]!=0),]
 #THIS IS THE NAME OF MY MARGIN VARIABLE
 #FINAL$MY_MARGIN<-paste(FINAL$MONTH,readable_name, sep="_")
 
-
+FINALstack$GEARCODE<-"MWT"
 
 
 
@@ -1698,9 +1700,9 @@ source(file.path(project_root_path,"R_code/Step_4_generic_raster_aggregator.R"))
 # STEP 3 -- Set your mapping options
 #### WHAT ARE YOU TRYING TO Aggregate?
 
-readable_name ="herring-only"
+readable_name ="MWT"
 geotiff.path = file.path(root.geotiff.path,paste(readable_name,todaysdate,sep="_"))
-sp1<-"herring-only_QTYKEPT_"
+sp1<-"MWT_REVENUE"
 z<-paste0("*",sp1,"*.tif")
 mypat1<-glob2rx(z)
 
@@ -1795,6 +1797,18 @@ writeRaster(holding_summer, filename=file.path(out.geotiff.path,outfilename), ov
 }
 
 ```	
+
+<!--
+Something here is broken, I think 
+
+Quitting from lines 1802-2143 (Mapping_RH_July2021.Rmd) 
+Error in sort.int(x, na.last = na.last, decreasing = decreasing, ...) : 
+  'x' must be atomic
+Calls: <Anonymous> ... withVisible -> eval -> eval -> sort -> sort.default -> sort.int
+In addition: There were 11 warnings (use warnings() to see them)
+Execution halted
+
+-->
 
 ```{r check_confidential_secondary_aggregation, include=FALSE, eval=TRUE} 
 #file path with geotiffs that you need to check for confidentiality
@@ -2143,7 +2157,7 @@ cleaned.image.path1<-cleaned.image.path
 
 <!-- Begim section to construct and map aggregated rasters for revenue on trips that retain herring -->
 
-```{r prep_geotiffs2, include=FALSE,eval=TRUE}   
+```{r prep_geotiffs2, include=FALSE,eval=FALSE}   
 # Read in the file attributes of the individual rasters.
 
 #I either use FIN or REVENUEFILE as the set of indvidual rasters that I might want to map.
@@ -2211,12 +2225,12 @@ if (nrow(confid_prob)>=1){
 }
 ```	
 
-```{r makegeotiffs2, include=FALSE, eval=TRUE}  
+```{r makegeotiffs2, include=FALSE, eval=FALSE}  
 source(file.path(project_root_path,"R_code/Step_4_generic_raster_aggregator.R"))
 
 ```	
 
-```{r secondary_aggregation_part2, include=FALSE, eval=TRUE} 
+```{r secondary_aggregation_part2, include=FALSE, eval=FALSE} 
 
 
 #################################################
@@ -2323,7 +2337,7 @@ writeRaster(holding_summer, filename=file.path(out.geotiff.path,outfilename), ov
 ```	
 
 
-```{r check_confidential_secondary_aggregation2, include=FALSE, eval=TRUE} 
+```{r check_confidential_secondary_aggregation2, include=FALSE, eval=FALSE} 
 #file path with geotiffs that you need to check for confidentiality
 in.geotiff.path = file.path(root.geotiff.path,paste(readable_name,todaysdate,sep="_"),"aggregated")
 
@@ -2714,7 +2728,7 @@ Commerical Fisheries landings data, Vessel Trip Reports, and Surfclam/OceanQuaho
 * There exist other fisheries in State waters that may not be reflected in data from federal sources (e.g. whelk, bluefish). It is recommended to query state agencies for additional data within state waters.
 * All summaries presented here are built from percentages of a trip that overlapped spatially with the WEAs. These percentages were applied to landings and values for that trip and summed. This differs from simply using the self-reported VTR/clam logbook locations as those place all value from that trip at a single point. Use of the VTR raster model is more representative as smoothing reported locations reduces the effect of location inaccuracy.
 
-
+NOTE: this isn't quite right. 
 
 # Maps of Selected Fishery Landings and Revenue  
 
@@ -2731,16 +2745,17 @@ cleaned.image.path1<-cleaned.image.path
 
 ```{r herring_landings, fig.show = "hold", out.width = "48%", fig.cap="\\label{herring_only} Herring Landings",  fig.align = "center", echo=FALSE}
 months<-c("9","10","11")
-knitr::include_graphics(file.path(cleaned.image.path1,paste0("reclass_herring-only_QTYKEPT_month_",months,".png")))
+knitr::include_graphics(file.path(cleaned.image.path1,paste0("reclass_MWT.png")))
 ```
 
 
+<!-- 
 
 ```{r rev_on_herring_trips, fig.show = "hold", out.width = "48%", fig.cap="\\label{rev} Revenue on Trips that landed Herring",  fig.align = "center", echo=FALSE}
 months<-c("9","10","11")
 knitr::include_graphics(file.path(cleaned.image.path2,paste0("reclass_allrev_trips-catch168_REVENUE_month_",months,".png")))
 ```
-
+-->
 
 
 ## References  
