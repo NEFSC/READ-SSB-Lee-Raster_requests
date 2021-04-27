@@ -17,9 +17,7 @@ editor_options:
 compact-title: FALSE
 ---
 <!-- 
-This is the markdown document used to make the generic report for the MAMFC River Herring Request.  It uses the offshoreWind package. I didn't get a shapefile from MAFMC, so I am using the Herring FW7 as a placeholder.
-
-
+This is the markdown document used to make the generic report for the MAMFC River Herring Request.  It uses the offshoreWind package. 
 
 To fix this, you have to run the getCallArea on the input shapefile and changes some of these lines:
 
@@ -87,12 +85,12 @@ desktopUse = ifelse(unname(Sys.info()["sysname"]) == "Windows", TRUE, FALSE)
 #############################################################################
 # versioning options
 todaysdate <- as.Date(Sys.time())
-todaysdate<-"2021-03-17"
+#todaysdate<-"2021-03-17"
 #############################################################################
 # Paths, names, and locations of inputs and outputs
 offshoreWindpath<-file.path(network_location,"home2","mlee","offshoreWind")
 project_root_path<-file.path(network_location,"home2","mlee","READ-SSB-Lee-Raster_requests")
-wind_area_hard_name = "Herring Framework 7"
+wind_area_hard_name = "River Herring and Shad"
 
 raster_manifest_location<-file.path(project_root_path,"raw_data")
 individual.raster.file="raster_manifest_2021-03-15.Rds"
@@ -204,15 +202,14 @@ myckey <- list(labels=list(cex=2)) # Set the size of color ramp labels (?)
 ```	
 
 
-```{r getcallArea, eval = F}  
-#Dennis ran this on March 11, 2021
+```{r getcallArea, eval = T}  
 #Plopping this in here, so I know how to find it if I have to update
 getCallAreaEffort(raster_folder =
-    file.path(network_location,"work5/socialsci/Geret_Rasters/Data/individualrasters",
-    shapefile_f = file.path(network_location,"home5/dcorvi/geret_data_request/HerringFW7",
-    output_f = file.path(network_location,"home5/dcorvi/geret_data_request/HerringFW7_output_CW",
-    start = 2010,
-    end = 2019)
+    file.path(network_location,"work5/socialsci/Geret_Rasters/Data/individualrasters"),
+    shapefile_f = file.path(network_location,"home2/mlee/READ-SSB-Lee-Raster_requests/input_data/RiverHerring/July2021/individual"),
+    output_f = file.path(network_location,"home2/mlee/READ-SSB-Lee-Raster_requests/raw_data/RiverHerring/July2021"),
+    start = START.YEAR,
+    end = END.YEAR)
 ```
 
 
