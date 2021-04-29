@@ -19,11 +19,6 @@ compact-title: FALSE
 <!-- 
 This is the markdown document used to make the generic report for the MAMFC River Herring Request.  It uses the offshoreWind package. 
 
-To fix this, you have to run the getCallArea on the input shapefile and changes some of these lines:
-
-overlap_data_path = file.path(network_location, "home5", "dcorvi", "geret_data_request", "HerringFW7_output_CW") # the file path of the folder where the overlap files are
-shapefile_path = file.path(project_root_path,"input_data/Herring/Framework7")
-
 
 #Need to keep only  "TRAWL-MIDWATER" and a subset of bottom trawl 
   mutate(gearcat_new = ifelse(GEARCODE %in% c('OBP', 'OHS','OTB','OTC','OTF','OTO','OTR','OTS','OTT','PTB', 'TTS'), 'TRAWL-BOTTOM', gearcat_new)) %>% 
@@ -101,6 +96,9 @@ root.image.path = file.path(project_root_path,"images","RiverHerring","July2021"
 root.table.path = file.path(project_root_path,"tables","RiverHerring","July2021")
 
 ML.GIS.PATH<-file.path(network_location,"home2", "mlee", "spatial data")
+
+overlap_data_path = file.path( project_root_path, "raw_data", "RiverHerring", "July2021") # the file path of the folder where the overlap files are. This comes from the output_folder of getCallAreaEffort
+
 
 #############################################################################
 
@@ -202,17 +200,15 @@ myckey <- list(labels=list(cex=2)) # Set the size of color ramp labels (?)
 ```	
 
 
-```{r getcallArea, eval = T}  
-#Plopping this in here, so I know how to find it if I have to update
+```{r getcallArea, eval = F}  
+#Plopping this in here, so I know how to find it if I have to update.  It looks like it took 5-10 hours per area, per year on MARS with 8 cores.  So that's a long time.
 getCallAreaEffort(raster_folder =
     file.path(network_location,"work5/socialsci/Geret_Rasters/Data/individualrasters"),
-    shapefile_f = file.path(network_location,"home2/mlee/READ-SSB-Lee-Raster_requests/input_data/RiverHerring/July2021/individual"),
-    output_f = file.path(network_location,"home2/mlee/READ-SSB-Lee-Raster_requests/raw_data/RiverHerring/July2021"),
+    shapefile_f = file.path(project_root_path,"/input_data/RiverHerring/July2021/individual"),
+    output_f = overlap_data_path
     start = START.YEAR,
     end = END.YEAR)
 ```
-
-
 
 
 ```{r construct raster manifest, eval = F}  
@@ -251,12 +247,19 @@ PROJ.LATLON = crs(my_basemap1)
 basemap_30min = readOGR(dsn=file.path(ML.GIS.PATH,"nmfs spatial data", "Thirty_Minute_Squares"), layer="Thirty_Minute_Squares", verbose=F)
 basemap_30min = spTransform(basemap_30min, CRS=PROJ.USE) # Don't project if you're plotting in a lat/lon, not-projected CRS
 
+# River Herring Shad  areas
+basemap_RHS = readOGR(dsn=file.path(project_root_path,"input_data", "RiverHerring", "July2021"), layer="RHS_combined", verbose=F)
+basemap_RHS = spTransform(basemap_RHS, CRS=PROJ.USE)
+
+
+
+
 # EastCoast_states
 basemap_eastcoast = readOGR(dsn=file.path(ML.GIS.PATH,"basic spatial data","more_states"), layer="EastCoast_states", verbose=F)
 basemap_eastcoast = spTransform(basemap_eastcoast, CRS=PROJ.USE) # Don't project if you're plotting in a lat/lon, not-projected CRS
 
 # EEZ Shapefiles
-basemap_EEZ = readOGR(dsn=file.path(ML.GIS.PATH,"nmfs spatial data", "corrected_stat_areas"), layer="EEZ", verbose=F)
+basemap_EEZ = readOGR(dsn=file.path(ML.GIS.PATH,"nmfs spatial data", "corrected_stat_areas", "EEZ"), layer="EEZ", verbose=F)
 basemap_EEZ = spTransform(basemap_EEZ, CRS=PROJ.USE) # Don't project if you're plotting in a lat/lon, not-projected CRS
 
 # Herring Management areas
@@ -265,14 +268,14 @@ basemap_herringHMA = spTransform(basemap_herringHMA, CRS=PROJ.USE)
 
 
 #Multispecies Closed Areas CAI, CAII, NLS)
-CAI_grnd = readOGR(dsn=file.path(ML.GIS.PATH,"spatial management measures","mults closed areas"), layer="mults_ca1", verbose=F)
+CAI_grnd = readOGR(dsn=file.path(ML.GIS.PATH,"spatial management measures","multispecies closed areas"), layer="mults_ca1", verbose=F)
 CAI_grnd = spTransform(CAI_grnd, CRS=PROJ.USE)
 CAI_grnd = CAI_grnd[CAI_grnd$id==2,]
 
-CAII_grnd = readOGR(dsn=file.path(ML.GIS.PATH,"spatial management measures","mults closed areas"), layer="mults_ca2", verbose=F)
+CAII_grnd = readOGR(dsn=file.path(ML.GIS.PATH,"spatial management measures","multispecies closed areas"), layer="mults_ca2", verbose=F)
 CAII_grnd = spTransform(CAII_grnd, CRS=PROJ.USE)
 
-NLS_grnd = readOGR(dsn=file.path(ML.GIS.PATH,"spatial management measures","mults closed areas"), layer="mults_nls", verbose=F)
+NLS_grnd = readOGR(dsn=file.path(ML.GIS.PATH,"spatial management measures","multispecies closed areas"), layer="mults_nls", verbose=F)
 NLS_grnd = spTransform(NLS_grnd, CRS=PROJ.USE)
 
 Closedgf_04_15 = gUnion(CAI_grnd[CAI_grnd$id==2,],CAII_grnd)
@@ -301,13 +304,13 @@ overlap_data_source = "folder"
 # overlap_data_source = "oracle" 
 
 oracle_overlap_table = "APSD.ALL_WEA_2008_2019@garfo_nefsc.world" #Oracle table to pull overlay files from
+#overlap_data_path = file.path( project_root_path, "raw_data", "RiverHerring", "July2021") # the file path of the folder where the overlap files are. This comes from the output_folder of getCallAreaEffort
 
-overlap_data_path = file.path(network_location, "home5", "dcorvi", "geret_data_request", "HerringFW7_output_CW") # the file path of the folder where the overlap files are
+ # River Herring Shad  areas
 
- 
 # shapefile_path = file.path(network_location,"home5/dcorvi/geret_data_request/HerringFW7")
 shapefile_path = "" # file path where a shapefile is to use for the map on the report
-shapefile_path = file.path(project_root_path,"input_data/Herring/Framework7")
+shapefile_path = file.path(project_root_path,"input_data", "RiverHerring", "July2021") 
 
 specific_wind_area = FALSE # this is for querying a specific wind area from a folder of multiple wind areas (for automating multiple reports)
 
@@ -390,7 +393,7 @@ save_files = "b" # either c("r","c","b","n") r = Save RData files, c = save csv 
 
 project_name = "TEST"  # description text that precedes the output file names
 
-output_folder_name = file.path(project_root_path,"raw_data/Herring/Framework7")
+output_folder_name = file.path(project_root_path,"raw_data/RiverHerring/July2021")
 # used for naming the folder where files will be saved
 
 # Plot colors
