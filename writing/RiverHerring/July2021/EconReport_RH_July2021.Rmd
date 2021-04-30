@@ -1024,12 +1024,41 @@ if (query_gearids == FALSE | query_permits == FALSE) {
 
 FIN_backup <- FIN
 
+```
+
+```{r add_mesh_size, eval=T}
+CONN <- odbcConnect(dsn=oracle_server, uid=oracle_username, pwd=oracle_password, believeNRows=FALSE)
+
+for(i in START.YEAR:END.YEAR) {
+  print(i)
+  CURRENT.QUERY = paste("SELECT unique VTR.veslog",i,"g.GEARID,
+                          VTR.veslog",i,"g.MESH
+        				FROM VTR.veslog",i,"g 
+        				ORDER BY VTR.veslog",i,"g.GEARID",sep="")
+  YEAR.RESULT = sqlQuery(CONN, CURRENT.QUERY)  ### seems to be a problem with having a "paste" on both sides...
+
+  # Now, the loop compiles the results; the first year must be treated slightly differently###
+  if (i==START.YEAR) {
+    GEAR.COMPILED = YEAR.RESULT
+  } else {
+    GEAR.COMPILED = rbind(GEAR.COMPILED, YEAR.RESULT) }
+}    # End Main Loop
+rm(YEAR.RESULT)
 
 ```
 
 ```{r process_permit_data, eval = T} 
 # FIN <- FIN_backup # for resets
-
+FIN <- merge(FIN,GEAR.COMPILED,by.x='IMGID',by.y='GEARID',all.x=TRUE, all.y=FALSE)
+if (length(FIN$GEARCODE[is.na(FIN$MESH) & 
+          FIN$GEARCODE%in%c("TRAWL-MIDWATER","TRAWL-BOTTOM",
+          "GILLNET-SINK","GILLNET-OTHER","SEINE-PURSE","SEINE-OTHER",
+          "WEIR-TRAP")])/
+          length(FIN$GEARCODE[FIN$GEARCODE%in%c("TRAWL-MIDWATER",
+          "TRAWL-BOTTOM","GILLNET-SINK","GILLNET-OTHER","SEINE-PURSE",
+          "SEINE-OTHER","WEIR-TRAP")])>0.01) 
+          stop("Matching Mesh resulted in too many missing values")
+         
 QUERY_RESULT$YEAR_L <- NULL # remove year variable
 
 FIN$GEARCAT <- ""
